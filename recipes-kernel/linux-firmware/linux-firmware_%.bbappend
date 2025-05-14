@@ -1,4 +1,4 @@
-# Support additional firmware for bc43xx and wl18xx WIFI+BT modules
+# Support additional firmware for bc43xx and wl18xx WIFI+BT modules (patched for https)
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
@@ -7,24 +7,30 @@ SRCREV_FORMAT = "linux-firmware"
 SRCREV_brcm = "8081cd2bddb1569abe91eb50bd687a2066a33342"
 BRANCH_brcm = "8.2.0.16"
 
-# TI WiFi FW 8.9.0.0.86 and BT FW 4.5
-SRCREV_tiwlan = "5ec05007f2662f460f881c5868311fd3ab7e6e71"
-BRANCH_tiwlan = "master"
-SRCREV_tibt = "6c9104f0fb7ca1bfb663c61e9ea599b3eafbee67"
-BRANCH_tibt = "master"
-
+# Replacing TI git:// sources with HTTPS cgit blobs
 SRC_URI_append = " \
-	git://github.com/varigit/bcm_4343w_fw.git;protocol=git;branch=${BRANCH_brcm};destsuffix=brcm;name=brcm \
-	git://git.ti.com/wilink8-wlan/wl18xx_fw.git;protocol=git;branch=${BRANCH_tiwlan};destsuffix=tiwlan;name=tiwlan \
-	git://git.ti.com/ti-bt/service-packs.git;protocol=git;branch=${BRANCH_tibt};destsuffix=tibt;name=tibt \
-	file://wl1271-nvs.bin \
+    git://github.com/varigit/bcm_4343w_fw.git;protocol=git;branch=${BRANCH_brcm};destsuffix=brcm;name=brcm \
+    https://git.ti.com/cgit/wilink8-wlan/wl18xx_fw/plain/wl18xx-fw-4.bin;name=tiwlan;subdir=tiwlan \
+    https://git.ti.com/cgit/ti-bt/service-packs/plain/initscripts/TIInit_11.8.32.bts;name=tibt;subdir=tibt \
+    file://wl1271-nvs.bin \
 "
+
+SRC_URI[tiwlan.sha256sum] = "3277445a5c14cd467300f1ae214e9484cc5e8e76b73637519d036bf47486f245"
+SRC_URI[tibt.sha256sum] = "3e5fd8e12f2665914b9da8d70e4cad3dcd8a9cf09eb130218405dc5c6bbbc563"
+
 do_install_append() {
-	install -d ${D}${nonarch_base_libdir}/firmware/bcm
-	install -m 0755 ${WORKDIR}/brcm/brcm/* ${D}${nonarch_base_libdir}/firmware/brcm/
-	install -m 0755 ${WORKDIR}/tibt/initscripts/TIInit_*.bts ${D}${nonarch_base_libdir}/firmware/ti-connectivity
-	install -m 0755 ${WORKDIR}/tiwlan/*.bin ${D}${nonarch_base_libdir}/firmware/ti-connectivity
-	install -m 0755 ${WORKDIR}/wl1271-nvs.bin ${D}${nonarch_base_libdir}/firmware/ti-connectivity
+    # Create base dirs
+    install -d ${D}${nonarch_base_libdir}/firmware
+    install -d ${D}${nonarch_base_libdir}/firmware/brcm
+    install -d ${D}${nonarch_base_libdir}/firmware/ti-connectivity
+
+    # Broadcom
+    install -m 0644 ${WORKDIR}/brcm/brcm/* ${D}${nonarch_base_libdir}/firmware/brcm/
+
+    # TI Wi-Fi + BT
+    install -m 0644 ${WORKDIR}/tiwlan/wl18xx-fw-4.bin ${D}${nonarch_base_libdir}/firmware/ti-connectivity/
+    install -m 0644 ${WORKDIR}/tibt/TIInit_11.8.32.bts ${D}${nonarch_base_libdir}/firmware/ti-connectivity/
+    install -m 0644 ${WORKDIR}/wl1271-nvs.bin ${D}${nonarch_base_libdir}/firmware/ti-connectivity/
 }
 
 FILES_${PN}-bcm4339 += " \
@@ -36,4 +42,3 @@ FILES_${PN}-bcm43430 += " \
   ${nonarch_base_libdir}/firmware/brcm/BCM43430A1.hcd \
   ${nonarch_base_libdir}/firmware/brcm/brcmfmac43430-sdio.txt \
 "
-
