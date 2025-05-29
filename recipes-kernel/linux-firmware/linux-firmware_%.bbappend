@@ -15,7 +15,7 @@ SRC_URI_append = " \
     file://wl1271-nvs.bin \
 "
 
-SRC_URI[tiwlan.sha256sum] = "3277445a5c14cd467300f1ae214e9484cc5e8e76b73637519d036bf47486f245"
+SRC_URI[tiwlan.sha256sum] = "f24ee728fe1bcd6b1fcdf31efcc0f6985c0c31a05eec49bff092f7801b8aff16"
 SRC_URI[tibt.sha256sum] = "3e5fd8e12f2665914b9da8d70e4cad3dcd8a9cf09eb130218405dc5c6bbbc563"
 
 do_install_append() {
